@@ -1,0 +1,31 @@
+# The public tunecrew/check-secrets action (std_git_safety_mechanics GSM-02).
+# Published byte for byte from tunecrew/agents by scripts/publish-check-secrets.py;
+# change it there, never in the public repository.
+#
+# One sh step and no nested action, so a caller runs no code but the two
+# scripts beside this file, at the commit its pin names (std_deployment DEP-07).
+# Every event value reaches the shell through env, never as an inline
+# expression, and secret-scan-range.sh checks each one as a full commit SHA.
+name: Check secrets
+description: >-
+  Fail when a commit a push or pull request brings adds a secrets/ path or a
+  known credential format, naming the commit, file, and line, never the value.
+runs:
+  using: composite
+  steps:
+    - name: Scan the event's commits for secrets
+      shell: sh
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+        PUSH_BEFORE_SHA: ${{ github.event.before }}
+        PUSH_AFTER_SHA: ${{ github.sha }}
+        PULL_REQUEST_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        PULL_REQUEST_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      # A root commit has no range; the scan then runs with no argument, which
+      # still checks the tracked and unignored secrets/ paths.
+      run: |
+        range="$(sh "$GITHUB_ACTION_PATH/secret-scan-range.sh")"
+        if [ -z "$range" ]; then
+          exec sh "$GITHUB_ACTION_PATH/check-secrets.sh"
+        fi
+        exec sh "$GITHUB_ACTION_PATH/check-secrets.sh" --range "$range"

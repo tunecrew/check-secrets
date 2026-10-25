@@ -1,0 +1,26 @@
+# The public tunecrew/check-secrets repository's own CI: it runs the action
+# from its own checkout on every push to main and every pull request.
+# Published as .github/workflows/self-test.yaml by
+# scripts/publish-check-secrets.py in tunecrew/agents; change it there.
+# It reads the repository and nothing else, so a fork's pull request gets no
+# secret and no write access (std_deployment DEP-07).
+name: Self-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  self-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          # All history, so every commit in the event's range is present.
+          fetch-depth: 0
+
+      - uses: ./

@@ -183,13 +183,11 @@ secrets_path_pattern='(^"?|/)secrets/'
 # context lines git prints past -U0 and the labelling would miscount, dropping
 # the next file's added lines. -M keeps rename detection on, as git's default
 # has it, whatever diff.renames says: a moved file's new lines are read and its
-# old ones are not read again, and a copy is read whole; the history scan's
-# --no-renames differs on purpose, since this gate blocks new content and that
-# audit reports every occurrence.
+# old ones are not read again, and a copy is read whole.
 # --no-replace-objects keeps a refs/replace entry from swapping a clean commit
 # in for the one scanned, or for HEAD, which the staged diff compares with.
-# test_check_secrets.py keeps these calls in step with scan-history-secrets.py's
-# diff call: a pin one carries and the other lacks needs a stated reason there.
+# test_check_secrets.py keeps the name-only call in step with the patch call:
+# a pin one carries and the other lacks needs a stated reason there.
 unset GIT_DIFF_OPTS
 if [ -z "$range" ]; then
   git --no-replace-objects -c core.quotePath=true diff --cached --name-only --no-relative --diff-filter=d \
